@@ -1,12 +1,11 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
 )
 
 func handleFunc(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(w, "Hello World!")
+	w.Write([]byte("<h1>Hello World!</h1>"))
 }
 
 func main() {
