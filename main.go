@@ -21,10 +21,17 @@ func faq(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("<h1>Frequently asked questions</h1>"))
 }
 
+func notFound(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/html")
+	w.WriteHeader(http.StatusNotFound)
+	w.Write([]byte("<h1>404: The page you're looking for doesn't exists</h1>"))
+}
+
 func main() {
 	r := mux.NewRouter()
 	r.HandleFunc("/", home)
 	r.HandleFunc("/contact", contact)
 	r.HandleFunc("/faq", faq)
+	r.NotFoundHandler = http.HandlerFunc(notFound)
 	http.ListenAndServe(":3000", r)
 }
