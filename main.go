@@ -5,7 +5,12 @@ import (
 )
 
 func handleFunc(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("<h1>Hello World!</h1>"))
+	w.Header().Set("Content-Type", "text/html")
+	if r.URL.Path == "/" {
+		w.Write([]byte("<h1>Welcome to main page of our web site!</h1>"))
+	} else if r.URL.Path == "/contact" {
+		w.Write([]byte("<h1>Soon here will be our contacts... I hope</h1>"))
+	}
 }
 
 func main() {
