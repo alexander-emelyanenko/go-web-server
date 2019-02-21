@@ -5,12 +5,8 @@ import (
 	"net/http"
 
 	"github.com/alexander-emelyanenko/go-web-server/controllers"
-	"github.com/alexander-emelyanenko/go-web-server/views"
 	"github.com/gorilla/mux"
 )
-
-var homeView *views.View
-var contactView *views.View
 
 func must(err error) {
 	if err != nil {
@@ -18,25 +14,13 @@ func must(err error) {
 	}
 }
 
-func home(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "text/html")
-	must(homeView.Render(w, nil))
-}
-
-func contact(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "text/html")
-	must(contactView.Render(w, nil))
-}
-
 func main() {
-	homeView = views.NewView("bootstrap", "views/home.gohtml")
-	contactView = views.NewView("bootstrap", "views/contact.gohtml")
-
+	staticController := controllers.NewStatic()
 	usersController := controllers.NewUsers()
 
 	router := mux.NewRouter()
-	router.HandleFunc("/", home).Methods("GET")
-	router.HandleFunc("/contact", contact).Methods("GET")
+	router.Handle("/", staticController.Home).Methods("GET")
+	router.Handle("/contact", staticController.Contact).Methods("GET")
 	router.HandleFunc("/signup", usersController.New).Methods("GET")
 	router.HandleFunc("/signup", usersController.Create).Methods("POST")
 
