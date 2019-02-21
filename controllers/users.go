@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/gorilla/schema"
+
 	"github.com/alexander-emelyanenko/go-web-server/views"
 )
 
@@ -19,6 +21,11 @@ type Users struct {
 	NewView *views.View
 }
 
+type SignupForm struct {
+	Email    string `schema:"email"`
+	Password string `schema:"password"`
+}
+
 // New method handles sign up request
 func (u *Users) New(w http.ResponseWriter, r *http.Request) {
 	if err := u.NewView.Render(w, nil); err != nil {
@@ -28,5 +35,16 @@ func (u *Users) New(w http.ResponseWriter, r *http.Request) {
 
 // Create new user
 func (u *Users) Create(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(w, "This is our temporary response")
+	if err := r.ParseForm(); err != nil {
+		panic(err)
+	}
+
+	decoder := schema.NewDecoder()
+	form := SignupForm{}
+
+	if err := decoder.Decode(&form, r.PostForm); err != nil {
+		panic(err)
+	}
+
+	fmt.Fprintln(w, form)
 }
