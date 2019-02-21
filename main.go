@@ -8,12 +8,6 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func must(err error) {
-	if err != nil {
-		panic(err)
-	}
-}
-
 func main() {
 	staticController := controllers.NewStatic()
 	usersController := controllers.NewUsers()
