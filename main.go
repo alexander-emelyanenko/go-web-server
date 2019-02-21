@@ -35,9 +35,10 @@ func main() {
 	usersController := controllers.NewUsers()
 
 	router := mux.NewRouter()
-	router.HandleFunc("/", home)
-	router.HandleFunc("/contact", contact)
-	router.HandleFunc("/signup", usersController.New)
+	router.HandleFunc("/", home).Methods("GET")
+	router.HandleFunc("/contact", contact).Methods("GET")
+	router.HandleFunc("/signup", usersController.New).Methods("GET")
+	router.HandleFunc("/signup", usersController.Create).Methods("POST")
 
 	log.Fatal(http.ListenAndServe(":3000", router))
 }

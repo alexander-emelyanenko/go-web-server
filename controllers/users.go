@@ -1,15 +1,11 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/alexander-emelyanenko/go-web-server/views"
 )
-
-// Users struct describes our controller
-type Users struct {
-	NewView *views.View
-}
 
 // NewUsers method returns Users struct
 func NewUsers() *Users {
@@ -18,9 +14,19 @@ func NewUsers() *Users {
 	}
 }
 
-// New method handles request
+// Users struct describes our users controller
+type Users struct {
+	NewView *views.View
+}
+
+// New method handles sign up request
 func (u *Users) New(w http.ResponseWriter, r *http.Request) {
 	if err := u.NewView.Render(w, nil); err != nil {
 		panic(err)
 	}
+}
+
+// Create new user
+func (u *Users) Create(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprint(w, "This is our temporary response")
 }
