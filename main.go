@@ -1,14 +1,12 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
 	"log"
 	"net/http"
-	"os"
-	"strings"
 
 	"github.com/alexander-emelyanenko/go-web-server/controllers"
+	"github.com/alexander-emelyanenko/go-web-server/models"
 	"github.com/gorilla/mux"
 )
 
@@ -21,7 +19,23 @@ const (
 )
 
 func main() {
-	// psqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
+	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
+
+	us, err := models.NewUserService(psqlInfo)
+	if err != nil {
+		panic(err)
+	}
+	defer us.Close()
+	us.DestructiveReset()
+
+	user := &models.User{
+		Name:  "Alexander Ivanov",
+		Email: "ivanov@gamil.com",
+	}
+
+	if err := us.Create(user); err != nil {
+		panic(err)
+	}
 
 	staticController := controllers.NewStatic()
 	usersController := controllers.NewUsers()

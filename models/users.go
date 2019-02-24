@@ -21,6 +21,10 @@ type UserService struct {
 	db *gorm.DB
 }
 
+func (us *UserService) Create(user *User) error {
+	return us.db.Create(user).Error
+}
+
 func (us *UserService) Close() error {
 	return us.db.Close()
 }
