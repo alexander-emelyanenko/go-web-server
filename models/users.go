@@ -3,6 +3,7 @@ package models
 import (
 	"errors"
 
+	"github.com/alexander-emelyanenko/go-web-server/hash"
 	"github.com/alexander-emelyanenko/go-web-server/rand"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
@@ -27,7 +28,8 @@ type User struct {
 }
 
 type UserService struct {
-	db *gorm.DB
+	db   *gorm.DB
+	hmac *hash.HMAC
 }
 
 func (us *UserService) Authenticate(email, password string) (*User, error) {
