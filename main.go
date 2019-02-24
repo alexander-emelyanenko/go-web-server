@@ -21,6 +21,7 @@ const (
 func main() {
 	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
 
+	// Connecting to DB
 	us, err := models.NewUserService(psqlInfo)
 	if err != nil {
 		panic(err)
@@ -28,6 +29,7 @@ func main() {
 	defer us.Close()
 	us.DestructiveReset()
 
+	// Creating new user
 	user := &models.User{
 		Name:  "Alexander Ivanov",
 		Email: "ivanov@gamil.com",
@@ -36,6 +38,14 @@ func main() {
 	if err := us.Create(user); err != nil {
 		panic(err)
 	}
+
+	// Fetching user from DB
+	newUser, err := us.ByID(1)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Printf("New user is %v\n", *newUser)
 
 	staticController := controllers.NewStatic()
 	usersController := controllers.NewUsers()
