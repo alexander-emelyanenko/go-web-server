@@ -10,6 +10,8 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+const hmacSecretKey = "secret-hmac-key"
+
 var (
 	userPwPepper       = "secret-random-string"
 	ErrInvalidPassword = errors.New("models: incorrect password provided")
@@ -29,7 +31,7 @@ type User struct {
 
 type UserService struct {
 	db   *gorm.DB
-	hmac *hash.HMAC
+	hmac hash.HMAC
 }
 
 func (us *UserService) Authenticate(email, password string) (*User, error) {
@@ -129,8 +131,12 @@ func NewUserService(connectionInfo string) (*UserService, error) {
 		return nil, err
 	}
 	db.LogMode(true)
+
+	hmac := hash.NewHMAC(hmacSecretKey)
+
 	return &UserService{
-		db: db,
+		db:   db,
+		hmac: hmac,
 	}, nil
 }
 
