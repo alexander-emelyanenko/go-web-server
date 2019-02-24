@@ -32,15 +32,15 @@ func main() {
 	// Creating new user
 	user := &models.User{
 		Name:  "Alexander Ivanov",
-		Email: "ivanov@gamil.com",
+		Email: "ivanov@gmail.com",
 	}
 
 	if err := us.Create(user); err != nil {
 		panic(err)
 	}
 
-	// Fetching user from DB
-	newUser, err := us.ByID(1)
+	// Fetching user from DB by Email
+	newUser, err := us.ByEmail("ivanov@gmail.com")
 	if err != nil {
 		panic(err)
 	}
