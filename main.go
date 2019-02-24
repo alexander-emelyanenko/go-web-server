@@ -43,5 +43,7 @@ func main() {
 	router.Handle("/login", usersController.LoginView).Methods("GET")
 	router.HandleFunc("/login", usersController.Login).Methods("POST")
 
+	router.HandleFunc("/cookietest", usersController.CookieTest).Methods("GET")
+
 	log.Fatal(http.ListenAndServe(":3000", router))
 }
