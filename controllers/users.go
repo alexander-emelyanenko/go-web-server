@@ -4,19 +4,22 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/alexander-emelyanenko/go-web-server/models"
 	"github.com/alexander-emelyanenko/go-web-server/views"
 )
-
-// NewUsers method returns Users struct
-func NewUsers() *Users {
-	return &Users{
-		NewView: views.NewView("bootstrap", "users/new"),
-	}
-}
 
 // Users struct describes our users controller
 type Users struct {
 	NewView *views.View
+	us      *models.UserService
+}
+
+// NewUsers method returns Users struct
+func NewUsers(us *models.UserService) *Users {
+	return &Users{
+		NewView: views.NewView("bootstrap", "users/new"),
+		us:      us,
+	}
 }
 
 type SignupForm struct {
