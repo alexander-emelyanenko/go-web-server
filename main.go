@@ -27,49 +27,7 @@ func main() {
 		panic(err)
 	}
 	defer us.Close()
-	us.DestructiveReset()
-
-	// Creating new user
-	user := &models.User{
-		Name:  "Alexander Ivanov",
-		Email: "ivanov@gmail.com",
-	}
-
-	if err := us.Create(user); err != nil {
-		panic(err)
-	}
-
-	// Fetching user from DB by Email
-	newUser, err := us.ByEmail("ivanov@gmail.com")
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Printf("New user is %v\n", *newUser)
-
-	// Updating user
-	user.Name = "John Smith"
-	if err := us.Update(user); err != nil {
-		panic(err)
-	}
-
-	updatedUser, err := us.ByEmail("ivanov@gmail.com")
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Printf("Updated user is %v\n", *updatedUser)
-
-	// Deleting user
-	if err := us.Delete(updatedUser.ID); err != nil {
-		panic(err)
-	}
-
-	// Verify the user is deleted
-	_, err = us.ByID(updatedUser.ID)
-	if err != models.ErrNotFound {
-		panic("user was not deleted")
-	}
+	us.AutoMigrate()
 
 	staticController := controllers.NewStatic()
 	usersController := controllers.NewUsers()
