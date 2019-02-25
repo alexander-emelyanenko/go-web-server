@@ -39,7 +39,7 @@ type LoginForm struct {
 }
 
 func (u *Users) CookieTest(w http.ResponseWriter, r *http.Request) {
-	cookie, err := r.Cookie("email")
+	cookie, err := r.Cookie("remember_token")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -98,14 +98,6 @@ func (u *Users) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// cookie := http.Cookie{
-	// 	Name:  "email",
-	// 	Value: user.Email,
-	// }
-
-	// http.SetCookie(w, &cookie)
-
-	// fmt.Fprintln(w, user)
 	err = u.signIn(w, user)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
