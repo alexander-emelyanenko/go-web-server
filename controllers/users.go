@@ -44,8 +44,12 @@ func (u *Users) CookieTest(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	fmt.Fprintln(w, "Email is:", cookie.Value)
 
+	user, err := u.userService.ByRemember(cookie.Value)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+	fmt.Fprintln(w, user)
 }
 
 // New method handles sign up request
