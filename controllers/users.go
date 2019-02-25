@@ -9,20 +9,20 @@ import (
 	"github.com/alexander-emelyanenko/go-web-server/views"
 )
 
-// Users struct describes our users controller
-type Users struct {
-	NewView     *views.View
-	LoginView   *views.View
-	userService *models.UserService
-}
-
 // NewUsers method returns Users struct
-func NewUsers(userService *models.UserService) *Users {
+func NewUsers(userService models.UserService) *Users {
 	return &Users{
 		NewView:     views.NewView("bootstrap", "users/new"),
 		LoginView:   views.NewView("bootstrap", "users/login"),
 		userService: userService,
 	}
+}
+
+// Users struct describes our users controller
+type Users struct {
+	NewView     *views.View
+	LoginView   *views.View
+	userService models.UserService
 }
 
 // SignupForm describes sign up request

@@ -14,11 +14,13 @@ const hmacSecretKey = "secret-hmac-key"
 
 var (
 	// Verification that we implemented UserDB interface correctly
-	_                  UserDB = &userGorm{}
-	userPwPepper              = "secret-random-string"
-	ErrInvalidPassword        = errors.New("models: incorrect password provided")
-	ErrNotFound               = errors.New("models: resource not found")
-	ErrInvalidID              = errors.New("models: ID provided was invalid")
+	_ UserDB = &userGorm{}
+	// Verification that we implemented UserService interface correctly
+	_                  UserService = &userService{}
+	userPwPepper                   = "secret-random-string"
+	ErrInvalidPassword             = errors.New("models: incorrect password provided")
+	ErrNotFound                    = errors.New("models: resource not found")
+	ErrInvalidID                   = errors.New("models: ID provided was invalid")
 )
 
 // User struct represents our user model
@@ -188,26 +190,39 @@ type userValidator struct {
 	UserDB
 }
 
+// UserService is a set of methods used to manipulate and
+// work with the user model
+type UserService interface {
+	// Authenticate will verify the provided email address and
+	// password are correct. If they are correct, the user
+	// corresponding to that email will be returned. Otherwise
+	// You will receive either:
+	// ErrNotFound, ErrInvalidPassword, or another error if
+	// something goes wrong.
+	Authenticate(email, password string) (*User, error)
+	UserDB
+}
+
 // NewUserService is the public constructor for UserService
-func NewUserService(connectionInfo string) (*UserService, error) {
+func NewUserService(connectionInfo string) (UserService, error) {
 	ug, err := newUserGorm(connectionInfo)
 	if err != nil {
 		return nil, err
 	}
-	return &UserService{
-		UserDB: userValidator{
+	return &userService{
+		UserDB: &userValidator{
 			UserDB: ug,
 		},
 	}, nil
 }
 
-// UserService defines our public struct to work with
-type UserService struct {
+// userService defines our struct to work with a user model
+type userService struct {
 	UserDB
 }
 
 // Authenticate method for users
-func (us *UserService) Authenticate(email, password string) (*User, error) {
+func (us *userService) Authenticate(email, password string) (*User, error) {
 	foundUser, err := us.ByEmail(email)
 	if err != nil {
 		return nil, err
