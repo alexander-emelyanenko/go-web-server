@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/alexander-emelyanenko/go-web-server/models"
+	"github.com/alexander-emelyanenko/go-web-server/rand"
 	"github.com/alexander-emelyanenko/go-web-server/views"
 )
 
@@ -52,6 +53,29 @@ func (u *Users) New(w http.ResponseWriter, r *http.Request) {
 	if err := u.NewView.Render(w, nil); err != nil {
 		panic(err)
 	}
+}
+
+// signIn is used to sign the given user via cookies
+func (u *Users) signIn(w http.ResponseWriter, user *models.User) error {
+	if user.Remember == "" {
+		token, err := rand.RememberToken()
+		if err != nil {
+			return err
+		}
+		user.Remember = token
+		err = u.userService.Update(user)
+		if err != nil {
+			return err
+		}
+	}
+
+	cookie := http.Cookie{
+		Name:  "remember_token",
+		Value: user.Remember,
+	}
+
+	http.SetCookie(w, &cookie)
+	return nil
 }
 
 // Login user
