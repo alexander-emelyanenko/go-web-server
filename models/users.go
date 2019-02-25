@@ -110,9 +110,8 @@ func (ug *userGorm) ByEmail(email string) (*User, error) {
 }
 
 // ByRemember method fetchs single user by remember token
-func (ug *userGorm) ByRemember(token string) (*User, error) {
+func (ug *userGorm) ByRemember(rememberHash string) (*User, error) {
 	var user User
-	rememberHash := ug.hmac.Hash(token)
 	err := first(ug.db.Where("remember_hash = ?", rememberHash), &user)
 	if err != nil {
 		return nil, err
@@ -188,6 +187,12 @@ func (ug *userGorm) AutoMigrate() error {
 // UserDB in our interface chain.
 type userValidator struct {
 	UserDB
+	hmac hash.HMAC
+}
+
+func (uv *userValidator) ByRemember(token string) (*User, error) {
+	rememberHash := uv.hmac.Hash(token)
+	return uv.UserDB.ByRemember(rememberHash)
 }
 
 // UserService is a set of methods used to manipulate and
@@ -209,9 +214,11 @@ func NewUserService(connectionInfo string) (UserService, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	return &userService{
 		UserDB: &userValidator{
 			UserDB: ug,
+			hmac:   hash.NewHMAC(hmacSecretKey),
 		},
 	}, nil
 }
