@@ -2,6 +2,7 @@ package models
 
 import (
 	"errors"
+	"strings"
 
 	"github.com/alexander-emelyanenko/go-web-server/hash"
 	"github.com/alexander-emelyanenko/go-web-server/rand"
@@ -175,6 +176,12 @@ type userValidator struct {
 	hmac hash.HMAC
 }
 
+func (uv *userValidator) normalizeEmail(user *User) error {
+	user.Email = strings.ToLower(user.Email)
+	user.Email = strings.TrimSpace(user.Email)
+	return nil
+}
+
 func (uv *userValidator) isGreaterThan(n uint) userValFn {
 	return userValFn(func(user *User) error {
 		if user.ID <= n {
@@ -219,6 +226,18 @@ func (uv *userValidator) bcryptPassword(user *User) error {
 	return nil
 }
 
+// ByEmail validation method
+func (uv *userValidator) ByEmail(email string) (*User, error) {
+	user := User{
+		Email: email,
+	}
+	err := runUserValFns(&user, uv.normalizeEmail)
+	if err != nil {
+		return nil, err
+	}
+	return uv.UserDB.ByEmail(user.Email)
+}
+
 // ByRemember validation method
 func (uv *userValidator) ByRemember(token string) (*User, error) {
 	user := User{
@@ -237,6 +256,7 @@ func (uv *userValidator) Create(user *User) error {
 		uv.bcryptPassword,
 		uv.setRememberIfUnset,
 		uv.hmacRemember,
+		uv.normalizeEmail,
 	)
 
 	if err != nil {
@@ -248,11 +268,14 @@ func (uv *userValidator) Create(user *User) error {
 
 // Update validation method
 func (uv *userValidator) Update(user *User) error {
-	if err := runUserValFns(
+	err := runUserValFns(
 		user,
 		uv.bcryptPassword,
 		uv.hmacRemember,
-	); err != nil {
+		uv.normalizeEmail,
+	)
+
+	if err != nil {
 		return err
 	}
 
