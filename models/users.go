@@ -131,10 +131,6 @@ func (ug *userGorm) Update(user *User) error {
 
 // Delete method allow us to delete user by id
 func (ug *userGorm) Delete(id uint) error {
-	if id == 0 {
-		return ErrInvalidID
-	}
-
 	user := User{Model: gorm.Model{ID: id}}
 	return ug.db.Delete(&user).Error
 }
@@ -202,6 +198,14 @@ func (uv *userValidator) Update(user *User) error {
 		user.RememberHash = uv.hmac.Hash(user.Remember)
 	}
 	return uv.UserDB.Update(user)
+}
+
+// Delete validation method
+func (uv *userValidator) Delete(id uint) error {
+	if id == 0 {
+		return ErrInvalidID
+	}
+	return uv.UserDB.Delete(id)
 }
 
 // UserService is a set of methods used to manipulate and
