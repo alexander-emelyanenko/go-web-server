@@ -126,9 +126,6 @@ func (ug *userGorm) Create(user *User) error {
 
 // Update method allows us to update user using User model struct
 func (ug *userGorm) Update(user *User) error {
-	if user.Remember != "" {
-		user.RememberHash = ug.hmac.Hash(user.Remember)
-	}
 	return ug.db.Save(user).Error
 }
 
@@ -197,6 +194,14 @@ func (uv *userValidator) Create(user *User) error {
 
 	user.RememberHash = uv.hmac.Hash(user.Remember)
 	return uv.UserDB.Create(user)
+}
+
+// Update validation method
+func (uv *userValidator) Update(user *User) error {
+	if user.Remember != "" {
+		user.RememberHash = uv.hmac.Hash(user.Remember)
+	}
+	return uv.UserDB.Update(user)
 }
 
 // UserService is a set of methods used to manipulate and
