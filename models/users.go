@@ -18,14 +18,14 @@ var (
 	// Verification that we implemented UserDB interface correctly
 	_ UserDB = &userGorm{}
 	// Verification that we implemented UserService interface correctly
-	_                  UserService = &userService{}
-	userPwPepper                   = "secret-random-string"
-	ErrInvalidPassword             = errors.New("models: incorrect password provided")
-	ErrNotFound                    = errors.New("models: resource not found")
-	ErrInvalidID                   = errors.New("models: ID provided was invalid")
-	ErrEmailRequired               = errors.New("models: email address is required")
-	ErrEmailInvalid                = errors.New("models: email address is not valid")
-	ErrEmailTaken                  = errors.New("models: email address is already taken")
+	_                    UserService = &userService{}
+	userPwPepper                     = "secret-random-string"
+	ErrPasswordIncorrect             = errors.New("models: incorrect password provided")
+	ErrNotFound                      = errors.New("models: resource not found")
+	ErrIDInvalid                     = errors.New("models: ID provided was invalid")
+	ErrEmailRequired                 = errors.New("models: email address is required")
+	ErrEmailInvalid                  = errors.New("models: email address is not valid")
+	ErrEmailTaken                    = errors.New("models: email address is already taken")
 )
 
 // User struct represents our user model
@@ -230,7 +230,7 @@ func (uv *userValidator) normalizeEmail(user *User) error {
 func (uv *userValidator) isGreaterThan(n uint) userValFn {
 	return userValFn(func(user *User) error {
 		if user.ID <= n {
-			return ErrInvalidID
+			return ErrIDInvalid
 		}
 		return nil
 	})
@@ -351,8 +351,8 @@ type UserService interface {
 	// password are correct. If they are correct, the user
 	// corresponding to that email will be returned. Otherwise
 	// You will receive either:
-	// ErrNotFound, ErrInvalidPassword, or another error if
-	// something goes wrong.
+	// ErrNotFound, ErrPasswordIncorrect, or another error if
+	// something goes wrong
 	Authenticate(email, password string) (*User, error)
 	UserDB
 }
@@ -377,7 +377,15 @@ type userService struct {
 	UserDB
 }
 
-// Authenticate method for users
+// Authenticate can be used to authenticate a user with the
+// provided email address and password.
+// If the email address provided is invalid, this will return
+// nil, ErrNotFound
+// If the password provided is invalid, this will return
+// nil, ErrPasswordIncorrect
+// If the email and password are both valid, this will return
+// user, nil
+// Otherwise if
 func (us *userService) Authenticate(email, password string) (*User, error) {
 	foundUser, err := us.ByEmail(email)
 	if err != nil {
@@ -389,7 +397,7 @@ func (us *userService) Authenticate(email, password string) (*User, error) {
 	case nil:
 		return foundUser, nil
 	case bcrypt.ErrMismatchedHashAndPassword:
-		return nil, ErrInvalidPassword
+		return nil, ErrPasswordIncorrect
 	default:
 		return nil, err
 	}
