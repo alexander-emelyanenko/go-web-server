@@ -34,6 +34,20 @@ type User struct {
 	RememberHash string `gorm:"not null;unique_index"`
 }
 
+// userValFn is a type for validation functions
+type userValFn func(*User) error
+
+// runUserValFns runs all userValFns put in it
+// and returns an error if something went wrong
+func runUserValFns(user *User, fns ...userValFn) error {
+	for _, fn := range fns {
+		if err := fn(user); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 // UserDB is used to interact with the users database.
 //
 // For pretty much all single user queries:
@@ -161,6 +175,21 @@ type userValidator struct {
 	hmac hash.HMAC
 }
 
+func (uv *userValidator) bcryptPassword(user *User) error {
+	if user.Password == "" {
+		return nil
+	}
+
+	pwBytes := []byte(user.Password + userPwPepper)
+	hashedBytes, err := bcrypt.GenerateFromPassword(pwBytes, bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+	user.PasswordHash = string(hashedBytes)
+	user.Password = ""
+	return nil
+}
+
 // ByRemember validation method
 func (uv *userValidator) ByRemember(token string) (*User, error) {
 	rememberHash := uv.hmac.Hash(token)
@@ -169,13 +198,9 @@ func (uv *userValidator) ByRemember(token string) (*User, error) {
 
 // Create validation method
 func (uv *userValidator) Create(user *User) error {
-	pwBytes := []byte(user.Password + userPwPepper)
-	hashedBytes, err := bcrypt.GenerateFromPassword(pwBytes, bcrypt.DefaultCost)
-	if err != nil {
+	if err := runUserValFns(user, uv.bcryptPassword); err != nil {
 		return err
 	}
-	user.PasswordHash = string(hashedBytes)
-	user.Password = ""
 
 	if user.Remember == "" {
 		token, err := rand.RememberToken()
@@ -191,6 +216,10 @@ func (uv *userValidator) Create(user *User) error {
 
 // Update validation method
 func (uv *userValidator) Update(user *User) error {
+	if err := runUserValFns(user, uv.bcryptPassword); err != nil {
+		return err
+	}
+
 	if user.Remember != "" {
 		user.RememberHash = uv.hmac.Hash(user.Remember)
 	}
