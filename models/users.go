@@ -26,6 +26,7 @@ var (
 	ErrEmailRequired                 = errors.New("models: email address is required")
 	ErrEmailInvalid                  = errors.New("models: email address is not valid")
 	ErrEmailTaken                    = errors.New("models: email address is already taken")
+	ErrPasswordTooShort              = errors.New("models: password must be at least 8 characters long")
 )
 
 // User struct represents our user model
@@ -190,6 +191,16 @@ func newUserValidator(udb UserDB, hmac hash.HMAC) *userValidator {
 	}
 }
 
+func (uv *userValidator) passwordMinLength(user *User) error {
+	if user.Password == "" {
+		return nil
+	}
+	if len(user.Password) < 8 {
+		return ErrPasswordTooShort
+	}
+	return nil
+}
+
 func (uv *userValidator) emailIsAvail(user *User) error {
 	existing, err := uv.ByEmail(user.Email)
 	if err == ErrNotFound {
@@ -298,6 +309,7 @@ func (uv *userValidator) ByRemember(token string) (*User, error) {
 func (uv *userValidator) Create(user *User) error {
 	err := runUserValFns(
 		user,
+		uv.passwordMinLength,
 		uv.bcryptPassword,
 		uv.setRememberIfUnset,
 		uv.hmacRemember,
@@ -318,6 +330,7 @@ func (uv *userValidator) Create(user *User) error {
 func (uv *userValidator) Update(user *User) error {
 	err := runUserValFns(
 		user,
+		uv.passwordMinLength,
 		uv.bcryptPassword,
 		uv.hmacRemember,
 		uv.normalizeEmail,
