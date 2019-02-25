@@ -181,6 +181,13 @@ func (ug *userGorm) AutoMigrate() error {
 	return nil
 }
 
+// userValidator is our validation layer that validates
+// and normalizes data before passing it on to the next
+// UserDB in our interface chain.
+type userValidator struct {
+	UserDB
+}
+
 // NewUserService is the public constructor for UserService
 func NewUserService(connectionInfo string) (*UserService, error) {
 	ug, err := newUserGorm(connectionInfo)
@@ -188,7 +195,9 @@ func NewUserService(connectionInfo string) (*UserService, error) {
 		return nil, err
 	}
 	return &UserService{
-		UserDB: ug,
+		UserDB: userValidator{
+			UserDB: ug,
+		},
 	}, nil
 }
 
