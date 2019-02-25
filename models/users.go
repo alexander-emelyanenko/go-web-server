@@ -2,6 +2,7 @@ package models
 
 import (
 	"errors"
+	"regexp"
 	"strings"
 
 	"github.com/alexander-emelyanenko/go-web-server/hash"
@@ -23,6 +24,7 @@ var (
 	ErrNotFound                    = errors.New("models: resource not found")
 	ErrInvalidID                   = errors.New("models: ID provided was invalid")
 	ErrEmailRequired               = errors.New("models: email address is required")
+	ErrEmailInvalid                = errors.New("models: email address is not valid")
 )
 
 // User struct represents our user model
@@ -174,7 +176,27 @@ func (ug *userGorm) AutoMigrate() error {
 // UserDB in our interface chain.
 type userValidator struct {
 	UserDB
-	hmac hash.HMAC
+	hmac       hash.HMAC
+	emailRegex *regexp.Regexp
+}
+
+// newUserValidator renturn new userValidator
+func newUserValidator(udb UserDB, hmac hash.HMAC) *userValidator {
+	return &userValidator{
+		UserDB:     udb,
+		hmac:       hmac,
+		emailRegex: regexp.MustCompile(`^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,16}$`),
+	}
+}
+
+func (uv *userValidator) emailFormat(user *User) error {
+	if user.Email == "" {
+		return nil
+	}
+	if !uv.emailRegex.MatchString(user.Email) {
+		return ErrEmailInvalid
+	}
+	return nil
 }
 
 func (uv *userValidator) requireEmail(user *User) error {
@@ -266,6 +288,7 @@ func (uv *userValidator) Create(user *User) error {
 		uv.hmacRemember,
 		uv.normalizeEmail,
 		uv.requireEmail,
+		uv.emailFormat,
 	)
 
 	if err != nil {
@@ -283,6 +306,7 @@ func (uv *userValidator) Update(user *User) error {
 		uv.hmacRemember,
 		uv.normalizeEmail,
 		uv.requireEmail,
+		uv.emailFormat,
 	)
 
 	if err != nil {
@@ -323,11 +347,11 @@ func NewUserService(connectionInfo string) (UserService, error) {
 		return nil, err
 	}
 
+	hmac := hash.NewHMAC(hmacSecretKey)
+	uv := newUserValidator(ug, hmac)
+
 	return &userService{
-		UserDB: &userValidator{
-			UserDB: ug,
-			hmac:   hash.NewHMAC(hmacSecretKey),
-		},
+		UserDB: uv,
 	}, nil
 }
 
