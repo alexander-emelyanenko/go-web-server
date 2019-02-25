@@ -1,7 +1,6 @@
 package models
 
 import (
-	"errors"
 	"regexp"
 	"strings"
 
@@ -20,17 +19,30 @@ var (
 	// Verification that we implemented UserService interface correctly
 	_                    UserService = &userService{}
 	userPwPepper                     = "secret-random-string"
-	ErrEmailRequired                 = errors.New("models: email address is required")
-	ErrEmailInvalid                  = errors.New("models: email address is not valid")
-	ErrEmailTaken                    = errors.New("models: email address is already taken")
-	ErrIDInvalid                     = errors.New("models: ID provided was invalid")
-	ErrNotFound                      = errors.New("models: resource not found")
-	ErrRememberRequired              = errors.New("models: remember token is required")
-	ErrRememberTooShort              = errors.New("models: remember token must be at least 32 bytes")
-	ErrPasswordIncorrect             = errors.New("models: incorrect password provided")
-	ErrPasswordTooShort              = errors.New("models: password must be at least 8 characters long")
-	ErrPasswordRequired              = errors.New("models: password is required")
+	ErrEmailRequired     modelError  = "models: email address is required"
+	ErrEmailInvalid      modelError  = "models: email address is not valid"
+	ErrEmailTaken        modelError  = "models: email address is already taken"
+	ErrIDInvalid         modelError  = "models: ID provided was invalid"
+	ErrNotFound          modelError  = "models: resource not found"
+	ErrRememberRequired  modelError  = "models: remember token is required"
+	ErrRememberTooShort  modelError  = "models: remember token must be at least 32 bytes"
+	ErrPasswordIncorrect modelError  = "models: incorrect password provided"
+	ErrPasswordTooShort  modelError  = "models: password must be at least 8 characters long"
+	ErrPasswordRequired  modelError  = "models: password is required"
 )
+
+type modelError string
+
+func (e modelError) Error() string {
+	return string(e)
+}
+
+func (e modelError) Public() string {
+	s := strings.Replace(string(e), "models: ", "", 1)
+	split := strings.Split(s, " ")
+	split[0] = strings.Title(split[0])
+	return strings.Join(split, " ")
+}
 
 // User struct represents our user model
 type User struct {
