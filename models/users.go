@@ -71,18 +71,15 @@ func newUserGorm(connectionInfo string) (*userGorm, error) {
 		return nil, err
 	}
 	db.LogMode(true)
-	hmac := hash.NewHMAC(hmacSecretKey)
 	return &userGorm{
-		db:   db,
-		hmac: hmac,
+		db: db,
 	}, nil
 }
 
 // userGorm represents our database interface layer
 // and implements the UserDB interface fully
 type userGorm struct {
-	db   *gorm.DB
-	hmac hash.HMAC
+	db *gorm.DB
 }
 
 // ByID method fetchs single user by unique id
