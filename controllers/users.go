@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/alexander-emelyanenko/go-web-server/models"
@@ -54,15 +55,7 @@ func (u *Users) CookieTest(w http.ResponseWriter, r *http.Request) {
 
 // New method handles sign up request
 func (u *Users) New(w http.ResponseWriter, r *http.Request) {
-	alert := views.Alert{
-		Level:   views.AlertLvlSuccess,
-		Message: "Successfully rendered a dynamic alert!",
-	}
-	data := views.Data{
-		Alert: &alert,
-		Yield: "this can be any data b/c its type is interface",
-	}
-	if err := u.NewView.Render(w, data); err != nil {
+	if err := u.NewView.Render(w, nil); err != nil {
 		panic(err)
 	}
 }
@@ -123,9 +116,16 @@ func (u *Users) Login(w http.ResponseWriter, r *http.Request) {
 
 // Create new user
 func (u *Users) Create(w http.ResponseWriter, r *http.Request) {
+	var vd views.Data
 	var form SignupForm
 	if err := parseForm(r, &form); err != nil {
-		panic(err)
+		log.Panicln(err)
+		vd.Alert = &views.Alert{
+			Level:   views.AlertLvlError,
+			Message: views.AlertMsgGeneric,
+		}
+		u.NewView.Render(w, vd)
+		return
 	}
 
 	user := models.User{
@@ -135,14 +135,17 @@ func (u *Users) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := u.userService.Create(&user); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		vd.Alert = &views.Alert{
+			Level:   views.AlertLvlError,
+			Message: err.Error(),
+		}
+		u.NewView.Render(w, vd)
 		return
 	}
 
 	err := u.signIn(w, &user)
 	if err != nil {
-		// Temporarily render error message for debugging
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Redirect(w, r, "/login", http.StatusFound)
 		return
 	}
 	http.Redirect(w, r, "/cookietest", http.StatusFound)
