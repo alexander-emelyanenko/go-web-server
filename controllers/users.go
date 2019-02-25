@@ -127,5 +127,11 @@ func (u *Users) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Fprintln(w, "User is", user)
+	err := u.signIn(w, &user)
+	if err != nil {
+		// Temporarily render error message for debugging
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	http.Redirect(w, r, "/cookietest", http.StatusFound)
 }
