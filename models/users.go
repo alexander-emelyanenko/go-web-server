@@ -25,6 +25,7 @@ var (
 	ErrInvalidID                   = errors.New("models: ID provided was invalid")
 	ErrEmailRequired               = errors.New("models: email address is required")
 	ErrEmailInvalid                = errors.New("models: email address is not valid")
+	ErrEmailTaken                  = errors.New("models: email address is already taken")
 )
 
 // User struct represents our user model
@@ -189,6 +190,20 @@ func newUserValidator(udb UserDB, hmac hash.HMAC) *userValidator {
 	}
 }
 
+func (uv *userValidator) emailIsAvail(user *User) error {
+	existing, err := uv.ByEmail(user.Email)
+	if err == ErrNotFound {
+		return nil
+	}
+	if err != nil {
+		return err
+	}
+	if user.ID != existing.ID {
+		return ErrEmailTaken
+	}
+	return nil
+}
+
 func (uv *userValidator) emailFormat(user *User) error {
 	if user.Email == "" {
 		return nil
@@ -289,6 +304,7 @@ func (uv *userValidator) Create(user *User) error {
 		uv.normalizeEmail,
 		uv.requireEmail,
 		uv.emailFormat,
+		uv.emailIsAvail,
 	)
 
 	if err != nil {
@@ -307,6 +323,7 @@ func (uv *userValidator) Update(user *User) error {
 		uv.normalizeEmail,
 		uv.requireEmail,
 		uv.emailFormat,
+		uv.emailIsAvail,
 	)
 
 	if err != nil {
