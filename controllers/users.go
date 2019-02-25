@@ -54,9 +54,7 @@ func (u *Users) CookieTest(w http.ResponseWriter, r *http.Request) {
 
 // New method handles sign up request
 func (u *Users) New(w http.ResponseWriter, r *http.Request) {
-	if err := u.NewView.Render(w, nil); err != nil {
-		panic(err)
-	}
+	u.NewView.Render(w, nil)
 }
 
 // signIn is used to sign the given user via cookies
