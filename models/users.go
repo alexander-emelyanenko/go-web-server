@@ -22,6 +22,7 @@ var (
 	ErrInvalidPassword             = errors.New("models: incorrect password provided")
 	ErrNotFound                    = errors.New("models: resource not found")
 	ErrInvalidID                   = errors.New("models: ID provided was invalid")
+	ErrEmailRequired               = errors.New("models: email address is required")
 )
 
 // User struct represents our user model
@@ -176,6 +177,13 @@ type userValidator struct {
 	hmac hash.HMAC
 }
 
+func (uv *userValidator) requireEmail(user *User) error {
+	if user.Email == "" {
+		return ErrEmailRequired
+	}
+	return nil
+}
+
 func (uv *userValidator) normalizeEmail(user *User) error {
 	user.Email = strings.ToLower(user.Email)
 	user.Email = strings.TrimSpace(user.Email)
@@ -257,6 +265,7 @@ func (uv *userValidator) Create(user *User) error {
 		uv.setRememberIfUnset,
 		uv.hmacRemember,
 		uv.normalizeEmail,
+		uv.requireEmail,
 	)
 
 	if err != nil {
@@ -273,6 +282,7 @@ func (uv *userValidator) Update(user *User) error {
 		uv.bcryptPassword,
 		uv.hmacRemember,
 		uv.normalizeEmail,
+		uv.requireEmail,
 	)
 
 	if err != nil {
