@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/alexander-emelyanenko/go-web-server/context"
 	"github.com/alexander-emelyanenko/go-web-server/models"
 )
 
@@ -23,6 +24,11 @@ func (mv *RequireUser) ApplyFn(next http.HandlerFunc) http.HandlerFunc {
 			http.Redirect(w, r, "/login", http.StatusFound)
 		}
 		fmt.Println("User found: ", user)
+
+		ctx := r.Context()
+		ctx = context.WithUser(ctx, user)
+		r = r.WithContext(ctx)
+
 		next(w, r)
 	})
 }

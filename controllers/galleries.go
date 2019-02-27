@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/alexander-emelyanenko/go-web-server/context"
 	"github.com/alexander-emelyanenko/go-web-server/models"
 	"github.com/alexander-emelyanenko/go-web-server/views"
 )
@@ -34,8 +35,11 @@ func (g *Galleries) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	user := context.User(r.Context())
+
 	gallery := models.Gallery{
-		Title: form.Title,
+		Title:  form.Title,
+		UserID: user.ID,
 	}
 
 	if err := g.gs.Create(&gallery); err != nil {
