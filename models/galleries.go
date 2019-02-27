@@ -10,18 +10,16 @@ type Gallery struct {
 	Title  string `gorm:"not_null"`
 }
 
-type GalleryService struct {
+type GalleryService interface {
 	GalleryDB
 }
-
 type GalleryDB interface {
 	Create(gallery *Gallery) error
 }
-
 type galleryGorm struct {
 	db *gorm.DB
 }
 
-func (gg *galleryGorm) Create(galllery *Gallery) error {
-
+func (gg *galleryGorm) Create(gallery *Gallery) error {
+	return nil
 }

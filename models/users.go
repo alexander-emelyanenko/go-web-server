@@ -99,18 +99,6 @@ type UserDB interface {
 	DestructiveReset() error
 }
 
-// newUserGorm is the private constructor for our userGorm
-func newUserGorm(connectionInfo string) (*userGorm, error) {
-	db, err := gorm.Open("postgres", connectionInfo)
-	if err != nil {
-		return nil, err
-	}
-	db.LogMode(true)
-	return &userGorm{
-		db: db,
-	}, nil
-}
-
 // userGorm represents our database interface layer
 // and implements the UserDB interface fully
 type userGorm struct {
@@ -430,18 +418,14 @@ type UserService interface {
 }
 
 // NewUserService is the public constructor for UserService
-func NewUserService(connectionInfo string) (UserService, error) {
-	ug, err := newUserGorm(connectionInfo)
-	if err != nil {
-		return nil, err
-	}
-
+func NewUserService(db *gorm.DB) UserService {
+	ug := &userGorm{db}
 	hmac := hash.NewHMAC(hmacSecretKey)
 	uv := newUserValidator(ug, hmac)
 
 	return &userService{
 		UserDB: uv,
-	}, nil
+	}
 }
 
 // userService defines our struct to work with a user model
