@@ -45,6 +45,7 @@ func main() {
 	router.HandleFunc("/login", usersController.Login).Methods("POST")
 
 	router.Handle("/galleries/new", galleriesController.New).Methods("GET")
+	router.HandleFunc("/galleries", galleriesController.Create).Methods("POST")
 
 	router.HandleFunc("/cookietest", usersController.CookieTest).Methods("GET")
 
