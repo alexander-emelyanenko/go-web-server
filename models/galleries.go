@@ -57,7 +57,7 @@ func (gv *galleryValidator) Create(gallery *Gallery) error {
 }
 
 func (gv *galleryValidator) userIDRequired(g *Gallery) error {
-	if g.UserID < 0 {
+	if g.UserID <= 0 {
 		return ErrUserIDRequired
 	}
 	return nil

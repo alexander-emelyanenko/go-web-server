@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/alexander-emelyanenko/go-web-server/controllers"
+	"github.com/alexander-emelyanenko/go-web-server/middleware"
 	"github.com/alexander-emelyanenko/go-web-server/models"
 	"github.com/gorilla/mux"
 )
@@ -33,6 +34,10 @@ func main() {
 	usersController := controllers.NewUsers(services.User)
 	galleriesController := controllers.NewGalleries(services.Gallery)
 
+	requireUserMw := middleware.RequireUser{
+		UserService: services.User,
+	}
+
 	router := mux.NewRouter()
 
 	router.Handle("/", staticController.Home).Methods("GET")
@@ -44,8 +49,11 @@ func main() {
 	router.Handle("/login", usersController.LoginView).Methods("GET")
 	router.HandleFunc("/login", usersController.Login).Methods("POST")
 
-	router.Handle("/galleries/new", galleriesController.New).Methods("GET")
-	router.HandleFunc("/galleries", galleriesController.Create).Methods("POST")
+	newGallery := requireUserMw.Apply(galleriesController.New)
+	createGallery := requireUserMw.ApplyFn(galleriesController.Create)
+
+	router.Handle("/galleries/new", newGallery).Methods("GET")
+	router.HandleFunc("/galleries", createGallery).Methods("POST")
 
 	router.HandleFunc("/cookietest", usersController.CookieTest).Methods("GET")
 
