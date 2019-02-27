@@ -26,11 +26,11 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	defer services.User.Close()
-	services.User.AutoMigrate()
+	defer services.Close()
+	services.AutoMigrate()
 
 	staticController := controllers.NewStatic()
-	usersController := controllers.NewUsers(userService)
+	usersController := controllers.NewUsers(services.User)
 
 	router := mux.NewRouter()
 
