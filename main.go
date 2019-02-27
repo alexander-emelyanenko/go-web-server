@@ -31,6 +31,7 @@ func main() {
 
 	staticController := controllers.NewStatic()
 	usersController := controllers.NewUsers(services.User)
+	galleriesController := controllers.NewGalleries(services.Gallery)
 
 	router := mux.NewRouter()
 
@@ -42,6 +43,8 @@ func main() {
 
 	router.Handle("/login", usersController.LoginView).Methods("GET")
 	router.HandleFunc("/login", usersController.Login).Methods("POST")
+
+	router.Handle("/galleries/new", galleriesController.New).Methods("GET")
 
 	router.HandleFunc("/cookietest", usersController.CookieTest).Methods("GET")
 
