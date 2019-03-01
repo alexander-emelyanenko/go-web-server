@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -13,7 +12,9 @@ import (
 )
 
 const (
-	ShowGallery = "show_gallery"
+	IndexGalleries = "index_galleries"
+	ShowGallery    = "show_gallery"
+	EditGallery    = "edit_gallery"
 )
 
 func NewGalleries(gs models.GalleryService, r *mux.Router) *Galleries {
@@ -75,7 +76,7 @@ func (g *Galleries) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	url, err := g.r.Get(ShowGallery).URL("id", strconv.Itoa(int(gallery.ID)))
+	url, err := g.r.Get(EditGallery).URL("id", strconv.Itoa(int(gallery.ID)))
 	if err != nil {
 		http.Redirect(w, r, "/", http.StatusFound)
 		return
@@ -167,7 +168,13 @@ func (g *Galleries) Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Fprintln(w, "Successfully deleted!")
+	url, err := g.r.Get(IndexGalleries).URL()
+	if err != nil {
+		http.Redirect(w, r, "/", http.StatusFound)
+		return
+	}
+
+	http.Redirect(w, r, url.Path, http.StatusFound)
 }
 
 func (g *Galleries) galleryByID(w http.ResponseWriter, r *http.Request) (*models.Gallery, error) {

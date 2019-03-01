@@ -49,15 +49,32 @@ func main() {
 	router.Handle("/login", usersController.LoginView).Methods("GET")
 	router.HandleFunc("/login", usersController.Login).Methods("POST")
 
-	router.Handle("/galleries", requireUserMw.ApplyFn(galleriesController.Index)).Methods("GET")
-	router.Handle("/galleries/new", requireUserMw.Apply(galleriesController.New)).Methods("GET")
-	router.HandleFunc("/galleries", requireUserMw.ApplyFn(galleriesController.Create)).Methods("POST")
-	router.HandleFunc("/galleries/{id:[0-9]+}", galleriesController.Show).Methods("GET").Name(controllers.ShowGallery)
-	router.HandleFunc("/galleries/{id:[0-9]+}/edit", requireUserMw.ApplyFn(galleriesController.Edit)).Methods("GET")
-	router.HandleFunc("/galleries/{id:[0-9]+}/update", requireUserMw.ApplyFn(galleriesController.Update)).Methods("POST")
-	router.HandleFunc("/galleries/{id:[0-9]+}/delete", requireUserMw.ApplyFn(galleriesController.Delete)).Methods("POST")
+	router.Handle("/galleries", requireUserMw.ApplyFn(galleriesController.Index)).
+		Methods("GET").
+		Name(controllers.IndexGalleries)
 
-	router.HandleFunc("/cookietest", usersController.CookieTest).Methods("GET")
+	router.Handle("/galleries/new", requireUserMw.Apply(galleriesController.New)).
+		Methods("GET")
+
+	router.HandleFunc("/galleries", requireUserMw.ApplyFn(galleriesController.Create)).
+		Methods("POST")
+
+	router.HandleFunc("/galleries/{id:[0-9]+}", galleriesController.Show).
+		Methods("GET").
+		Name(controllers.ShowGallery)
+
+	router.HandleFunc("/galleries/{id:[0-9]+}/edit", requireUserMw.ApplyFn(galleriesController.Edit)).
+		Methods("GET").
+		Name(controllers.EditGallery)
+
+	router.HandleFunc("/galleries/{id:[0-9]+}/update", requireUserMw.ApplyFn(galleriesController.Update)).
+		Methods("POST")
+
+	router.HandleFunc("/galleries/{id:[0-9]+}/delete", requireUserMw.ApplyFn(galleriesController.Delete)).
+		Methods("POST")
+
+	router.HandleFunc("/cookietest", usersController.CookieTest).
+		Methods("GET")
 
 	log.Fatal(http.ListenAndServe(":3000", router))
 }
