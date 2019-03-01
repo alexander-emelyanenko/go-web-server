@@ -36,9 +36,11 @@ func main() {
 	usersController := controllers.NewUsers(services.User)
 	galleriesController := controllers.NewGalleries(services.Gallery, router)
 
-	requireUserMw := middleware.RequireUser{
+	userMw := middleware.User{
 		UserService: services.User,
 	}
+
+	requireUserMw := middleware.RequireUser{}
 
 	router.Handle("/", staticController.Home).Methods("GET")
 	router.Handle("/contact", staticController.Contact).Methods("GET")
@@ -76,5 +78,5 @@ func main() {
 	router.HandleFunc("/cookietest", usersController.CookieTest).
 		Methods("GET")
 
-	log.Fatal(http.ListenAndServe(":3000", router))
+	log.Fatal(http.ListenAndServe(":3000", userMw.Apply(router)))
 }

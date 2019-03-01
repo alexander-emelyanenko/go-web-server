@@ -1,38 +1,56 @@
 package middleware
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/alexander-emelyanenko/go-web-server/context"
 	"github.com/alexander-emelyanenko/go-web-server/models"
 )
 
-type RequireUser struct {
+// User middleware will lookup the current user via their
+// remember_token cookie using the UserService. If the user
+// is found, they will be set on the request context.
+// Regardless, the next handler is always called.
+type User struct {
 	models.UserService
 }
 
-func (mv *RequireUser) ApplyFn(next http.HandlerFunc) http.HandlerFunc {
+func (mw *User) Apply(next http.Handler) http.HandlerFunc {
+	return mw.ApplyFn(next.ServeHTTP)
+}
+
+func (mw *User) ApplyFn(next http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		cookie, err := r.Cookie("remember_token")
 		if err != nil {
-			http.Redirect(w, r, "/login", http.StatusFound)
+			next(w, r)
 			return
 		}
-		user, err := mv.UserService.ByRemember(cookie.Value)
+		user, err := mw.UserService.ByRemember(cookie.Value)
 		if err != nil {
-			http.Redirect(w, r, "/login", http.StatusFound)
+			next(w, r)
+			return
 		}
-		fmt.Println("User found: ", user)
-
 		ctx := r.Context()
 		ctx = context.WithUser(ctx, user)
 		r = r.WithContext(ctx)
-
 		next(w, r)
 	})
 }
 
-func (mv *RequireUser) Apply(next http.Handler) http.HandlerFunc {
-	return mv.ApplyFn(next.ServeHTTP)
+type RequireUser struct{}
+
+func (mw *RequireUser) Apply(next http.Handler) http.HandlerFunc {
+	return mw.ApplyFn(next.ServeHTTP)
+}
+
+func (mw *RequireUser) ApplyFn(next http.HandlerFunc) http.HandlerFunc {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		user := context.User(r.Context())
+		if user == nil {
+			http.Redirect(w, r, "/login", http.StatusFound)
+			return
+		}
+		next(w, r)
+	})
 }

@@ -2,6 +2,8 @@ package views
 
 import (
 	"log"
+
+	"github.com/alexander-emelyanenko/go-web-server/models"
 )
 
 const (
@@ -21,6 +23,7 @@ type PublicError interface {
 // to come in.
 type Data struct {
 	Alert *Alert
+	User  *models.User
 	Yield interface{}
 }
 
