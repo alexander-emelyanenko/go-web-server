@@ -49,6 +49,7 @@ func main() {
 	router.Handle("/login", usersController.LoginView).Methods("GET")
 	router.HandleFunc("/login", usersController.Login).Methods("POST")
 
+	router.Handle("/galleries", requireUserMw.ApplyFn(galleriesController.Index)).Methods("GET")
 	router.Handle("/galleries/new", requireUserMw.Apply(galleriesController.New)).Methods("GET")
 	router.HandleFunc("/galleries", requireUserMw.ApplyFn(galleriesController.Create)).Methods("POST")
 	router.HandleFunc("/galleries/{id:[0-9]+}", galleriesController.Show).Methods("GET").Name(controllers.ShowGallery)
